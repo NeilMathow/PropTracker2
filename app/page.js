@@ -152,7 +152,7 @@ function FirmsGrid({ onSync, onClear, loading, hasData }) {
           </div>
           <div style={{ display: "flex", gap: "8px" }}>
             {firm.comingSoon ? (
-              <div style={{ fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "7px", background: "rgba(255,255,255,0.05)", color: "var(--muted)", border: "1px solid var(--border)", letterSpacing: "0.05em" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "7px", background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.3)", letterSpacing: "0.05em" }}>
                 Coming Soon
               </div>
             ) : (firm.connected === "dynamic" ? hasData : firm.connected) ? (
