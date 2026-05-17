@@ -107,26 +107,26 @@ const FIRMS = [
   { name: "TopstepX", connected: "dynamic", color: "#f97316", logo: (
     <img src="/logos/topstep.png" alt="TopstepX" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "My Funded Futures", connected: false, color: "#c9a84c", logo: (
+  { name: "My Funded Futures", connected: false, comingSoon: true, color: "#c9a84c", logo: (
     <img src="/logos/mff.jpg" alt="My Funded Futures" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Lucid Trading", connected: false, color: "#8b5cf6", logo: (
+  { name: "Lucid Trading", connected: false, comingSoon: true, color: "#8b5cf6", logo: (
     <svg viewBox="0 0 40 40" width="36" height="36">
       <rect width="40" height="40" rx="8" fill="#1a1035"/>
       <circle cx="20" cy="20" r="12" fill="none" stroke="#8b5cf6" strokeWidth="3"/>
       <circle cx="20" cy="20" r="5" fill="#8b5cf6"/>
     </svg>
   )},
-  { name: "Take Profit Trader", connected: false, color: "#6366f1", logo: (
+  { name: "Take Profit Trader", connected: false, comingSoon: true, color: "#6366f1", logo: (
     <img src="/logos/tpt.png" alt="Take Profit Trader" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Alpha Futures", connected: false, color: "#10b981", logo: (
+  { name: "Alpha Futures", connected: false, comingSoon: true, color: "#10b981", logo: (
     <img src="/logos/alpha.png" alt="Alpha Futures" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Apex Trader Funding", connected: false, color: "#f59e0b", logo: (
+  { name: "Apex Trader Funding", connected: false, comingSoon: true, color: "#f59e0b", logo: (
     <img src="/logos/apex.png" alt="Apex Trader Funding" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Tradeify", connected: false, color: "#10b981", logo: (
+  { name: "Tradeify", connected: false, comingSoon: true, color: "#10b981", logo: (
     <img src="/logos/tradeify.png" alt="Tradeify" style={{ width: "38px", height: "38px", borderRadius: "10px", objectFit: "cover", display: "block", margin: "2px" }} />
   )}
 ];
@@ -151,7 +151,11 @@ function FirmsGrid({ onSync, onClear, loading, hasData }) {
             <div style={{ flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px", overflow: "hidden" }}>{firm.logo}</div>
           </div>
           <div style={{ display: "flex", gap: "8px" }}>
-            {(firm.connected === "dynamic" ? hasData : firm.connected) ? (
+            {firm.comingSoon ? (
+              <div style={{ fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "7px", background: "rgba(255,255,255,0.05)", color: "var(--muted)", border: "1px solid var(--border)", letterSpacing: "0.05em" }}>
+                Coming Soon
+              </div>
+            ) : (firm.connected === "dynamic" ? hasData : firm.connected) ? (
               <>
                 <button onClick={onSync} disabled={loading} style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                   {loading ? "Syncing..." : "Re-sync"}
