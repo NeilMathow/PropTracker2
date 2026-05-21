@@ -104,18 +104,14 @@ function PNLChart({ payouts, spending }) {
 }
 
 const FIRMS = [
-  { name: "TopstepX", connected: "dynamic", color: "#f97316", logo: (
+  { name: "TopstepX", firmKey: "topstep", connected: "dynamic", color: "#f97316", logo: (
     <img src="/logos/topstep.png" alt="TopstepX" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "My Funded Futures", connected: false, comingSoon: true, color: "#c9a84c", logo: (
+  { name: "My Funded Futures", firmKey: "mff", connected: "dynamic", color: "#c9a84c", logo: (
     <img src="/logos/mff.jpg" alt="My Funded Futures" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Lucid Trading", connected: false, comingSoon: true, color: "#8b5cf6", logo: (
-    <svg viewBox="0 0 40 40" width="36" height="36">
-      <rect width="40" height="40" rx="8" fill="#1a1035"/>
-      <circle cx="20" cy="20" r="12" fill="none" stroke="#8b5cf6" strokeWidth="3"/>
-      <circle cx="20" cy="20" r="5" fill="#8b5cf6"/>
-    </svg>
+  { name: "Lucid Trading", firmKey: "lucid", connected: "dynamic", color: "#8b5cf6", logo: (
+    <img src="/logos/lucid.png" alt="Lucid Trading" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
   { name: "Take Profit Trader", connected: false, comingSoon: true, color: "#6366f1", logo: (
     <img src="/logos/tpt.png" alt="Take Profit Trader" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
@@ -123,7 +119,7 @@ const FIRMS = [
   { name: "Alpha Futures", connected: false, comingSoon: true, color: "#10b981", logo: (
     <img src="/logos/alpha.png" alt="Alpha Futures" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
-  { name: "Apex Trader Funding", connected: false, comingSoon: true, color: "#f59e0b", logo: (
+  { name: "Apex Trader Funding", firmKey: "apex", connected: "dynamic", color: "#f59e0b", logo: (
     <img src="/logos/apex.png" alt="Apex Trader Funding" style={{ width: "42px", height: "42px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
   )},
   { name: "Tradeify", connected: false, comingSoon: true, color: "#10b981", logo: (
@@ -131,10 +127,13 @@ const FIRMS = [
   )}
 ];
 
-function FirmsGrid({ onSync, onClear, loading, hasData }) {
+function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, loading, firmLoading, firmData }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
-      {FIRMS.map((firm) => (
+      {FIRMS.map((firm) => {
+        const hasData = firm.connected === "dynamic" ? (firmData[firm.firmKey] || false) : firm.connected;
+        const isFirmLoading = firmLoading?.[firm.firmKey] || false;
+        return (
         <div key={firm.name}
           style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "14px", transition: "border-color 0.2s, box-shadow 0.2s" }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(249,115,22,0.6)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(249,115,22,0.15)'; }}
@@ -143,9 +142,9 @@ function FirmsGrid({ onSync, onClear, loading, hasData }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: "15px", fontWeight: 700, marginBottom: "8px", color: "#fff" }}>{firm.name}</div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "6px", background: (firm.connected === "dynamic" ? hasData : firm.connected) ? "rgba(0,217,126,0.12)" : "rgba(255,255,255,0.05)", color: (firm.connected === "dynamic" ? hasData : firm.connected) ? "var(--green)" : "var(--muted)" }}>
-                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: (firm.connected === "dynamic" ? hasData : firm.connected) ? "var(--green)" : "var(--muted)", display: "inline-block" }}></span>
-                {(firm.connected === "dynamic" ? hasData : firm.connected) ? "Connected" : "Not connected"}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "6px", background: hasData ? "rgba(0,217,126,0.12)" : "rgba(255,255,255,0.05)", color: hasData ? "var(--green)" : "var(--muted)" }}>
+                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: hasData ? "var(--green)" : "var(--muted)", display: "inline-block" }}></span>
+                {hasData ? "Connected" : "Not connected"}
               </div>
             </div>
             <div style={{ flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px", overflow: "hidden" }}>{firm.logo}</div>
@@ -155,25 +154,25 @@ function FirmsGrid({ onSync, onClear, loading, hasData }) {
               <div style={{ fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "7px", background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.3)", letterSpacing: "0.05em" }}>
                 Coming Soon
               </div>
-            ) : (firm.connected === "dynamic" ? hasData : firm.connected) ? (
+            ) : hasData ? (
               <>
-                <button onClick={onSync} disabled={loading} style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                  {loading ? "Syncing..." : "Re-sync"}
+                <button onClick={() => onSyncFirm(firm.firmKey)} disabled={isFirmLoading || loading} style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: isFirmLoading || loading ? 0.6 : 1 }}>
+                  {isFirmLoading ? "Syncing..." : "Re-sync"}
                 </button>
-                <button onClick={onClear} style={{ background: "transparent", color: "var(--muted)", border: "1px solid var(--border)", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
+                <button onClick={() => onClearFirm(firm.firmKey)} style={{ background: "transparent", color: "var(--muted)", border: "1px solid var(--border)", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
               </>
             ) : (
               <button
-                onClick={firm.connected === "dynamic" ? onSync : undefined}
-                disabled={firm.connected === "dynamic" && loading}
-                style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: firm.connected === "dynamic" && loading ? 0.6 : 1 }}
+                onClick={firm.connected === "dynamic" ? () => onSyncFirm(firm.firmKey) : undefined}
+                disabled={isFirmLoading}
+                style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "7px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: isFirmLoading ? 0.6 : 1 }}
               >
-                {firm.connected === "dynamic" && loading ? "Connecting..." : "Connect"}
-              </button>
-            )}
+                {isFirmLoading ? "Connecting..." : "Connect"}
+              </button>            )}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -775,8 +774,9 @@ function CalendarPage({ payouts, spending, savedJournals, setSavedJournals, sess
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [data, setData] = useState({ combines: [], spending: [], payouts: [], closed: [] });
+  const [data, setData] = useState({ combines: [], spending: [], payouts: [], closed: [], firmData: { topstep: false, mff: false, lucid: false, apex: false } });
   const [loading, setLoading] = useState(false);
+  const [firmLoading, setFirmLoading] = useState({ topstep: false, mff: false, lucid: false, apex: false });
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -832,35 +832,114 @@ export default function Dashboard() {
     }
   }, [savedJournals]);
 
+  const fetchFirm = async (firmKey) => {
+    setError(null);
+    setFirmLoading(prev => ({ ...prev, [firmKey]: true }));
+    try {
+      const endpoints = {
+        topstep: [fetch("/api/combines"), fetch("/api/spending"), fetch("/api/payouts"), fetch("/api/closed")],
+        mff: [fetch("/api/mff/combines"), fetch("/api/mff/spending")],
+        lucid: [fetch("/api/lucid/combines"), fetch("/api/lucid/spending")],
+      };
+      if (firmKey === "topstep") {
+        const [combinesRes, spendingRes, payoutsRes, closedRes] = await Promise.all(endpoints.topstep);
+        const [combinesData, spendingData, payoutsData, closedData] = await Promise.all([combinesRes.json(), spendingRes.json(), payoutsRes.json(), closedRes.json()]);
+        setData(prev => ({
+          ...prev,
+          combines: [...prev.combines.filter(e => e.firm !== "topstep"), ...(combinesData.emails || []).map(e => ({ ...e, firm: "topstep" }))],
+          spending: [...prev.spending.filter(e => e.firm !== "topstep"), ...(spendingData.emails || []).map(e => ({ ...e, firm: "topstep" }))],
+          payouts: payoutsData.emails || [],
+          closed: closedData.emails || [],
+          firmData: { ...prev.firmData, topstep: true },
+        }));
+      } else if (firmKey === "mff") {
+        const [combinesRes, spendingRes] = await Promise.all(endpoints.mff);
+        const [combinesData, spendingData] = await Promise.all([combinesRes.json(), spendingRes.json()]);
+        setData(prev => ({
+          ...prev,
+          combines: [...prev.combines.filter(e => e.firm !== "mff"), ...(combinesData.emails || []).map(e => ({ ...e, firm: "mff" }))],
+          spending: [...prev.spending.filter(e => e.firm !== "mff"), ...(spendingData.emails || []).map(e => ({ ...e, firm: "mff" }))],
+          firmData: { ...prev.firmData, mff: true },
+        }));
+      } else if (firmKey === "lucid") {
+        const [combinesRes, spendingRes] = await Promise.all(endpoints.lucid);
+        const [combinesData, spendingData] = await Promise.all([combinesRes.json(), spendingRes.json()]);
+        setData(prev => ({
+          ...prev,
+          combines: [...prev.combines.filter(e => e.firm !== "lucid"), ...(combinesData.emails || []).map(e => ({ ...e, firm: "lucid" }))],
+          spending: [...prev.spending.filter(e => e.firm !== "lucid"), ...(spendingData.emails || []).map(e => ({ ...e, firm: "lucid" }))],
+          firmData: { ...prev.firmData, lucid: true },
+        }));
+      } else if (firmKey === "apex") {
+        const [combinesRes, spendingRes] = await Promise.all([fetch("/api/apex/combines"), fetch("/api/apex/spending")]);
+        const [combinesData, spendingData] = await Promise.all([combinesRes.json(), spendingRes.json()]);
+        setData(prev => ({
+          ...prev,
+          combines: [...prev.combines.filter(e => e.firm !== "apex"), ...(combinesData.emails || []).map(e => ({ ...e, firm: "apex" }))],
+          spending: [...prev.spending.filter(e => e.firm !== "apex"), ...(spendingData.emails || []).map(e => ({ ...e, firm: "apex" }))],
+          firmData: { ...prev.firmData, apex: true },
+        }));
+      }
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setFirmLoading(prev => ({ ...prev, [firmKey]: false }));
+    }
+  };
+
   const fetchAllData = async () => {
     setError(null);
     setLoading(true);
+    setFirmLoading({ topstep: true, mff: true, lucid: true, apex: true });
     try {
-      const [combinesRes, spendingRes, payoutsRes, closedRes] = await Promise.all([
+      const [combinesRes, spendingRes, payoutsRes, closedRes, mffCombinesRes, mffSpendingRes, lucidCombinesRes, lucidSpendingRes, apexCombinesRes, apexSpendingRes] = await Promise.all([
         fetch("/api/combines"),
         fetch("/api/spending"),
         fetch("/api/payouts"),
         fetch("/api/closed"),
+        fetch("/api/mff/combines"),
+        fetch("/api/mff/spending"),
+        fetch("/api/lucid/combines"),
+        fetch("/api/lucid/spending"),
+        fetch("/api/apex/combines"),
+        fetch("/api/apex/spending"),
       ]);
       if (!combinesRes.ok || !spendingRes.ok || !payoutsRes.ok || !closedRes.ok) throw new Error("Failed to fetch data");
-      const [combinesData, spendingData, payoutsData, closedData] = await Promise.all([
+      const [combinesData, spendingData, payoutsData, closedData, mffCombinesData, mffSpendingData, lucidCombinesData, lucidSpendingData, apexCombinesData, apexSpendingData] = await Promise.all([
         combinesRes.json(), spendingRes.json(), payoutsRes.json(), closedRes.json(),
+        mffCombinesRes.ok ? mffCombinesRes.json() : { emails: [] },
+        mffSpendingRes.ok ? mffSpendingRes.json() : { emails: [] },
+        lucidCombinesRes.ok ? lucidCombinesRes.json() : { emails: [] },
+        lucidSpendingRes.ok ? lucidSpendingRes.json() : { emails: [] },
+        apexCombinesRes.ok ? apexCombinesRes.json() : { emails: [] },
+        apexSpendingRes.ok ? apexSpendingRes.json() : { emails: [] },
       ]);
       setData({
-        combines: combinesData.emails || [],
-        spending: spendingData.emails || [],
+        combines: [
+          ...(combinesData.emails || []).map(e => ({ ...e, firm: "topstep" })),
+          ...(mffCombinesData.emails || []).map(e => ({ ...e, firm: "mff" })),
+          ...(lucidCombinesData.emails || []).map(e => ({ ...e, firm: "lucid" })),
+          ...(apexCombinesData.emails || []).map(e => ({ ...e, firm: "apex" })),
+        ],
+        spending: [
+          ...(spendingData.emails || []).map(e => ({ ...e, firm: "topstep" })),
+          ...(mffSpendingData.emails || []).map(e => ({ ...e, firm: "mff" })),
+          ...(lucidSpendingData.emails || []).map(e => ({ ...e, firm: "lucid" })),
+          ...(apexSpendingData.emails || []).map(e => ({ ...e, firm: "apex" })),
+        ],
         payouts: payoutsData.emails || [],
         closed: closedData.emails || [],
+        firmData: { topstep: true, mff: true, lucid: true, apex: true },
       });
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
+      setFirmLoading({ topstep: false, mff: false, lucid: false, apex: false });
     }
   };
-
-  if (status === "loading") return <div className="loading"><div className="spinner" /></div>;
 
   if (!session) {
     return (
@@ -1023,7 +1102,7 @@ export default function Dashboard() {
                 </div>
                 <div className="metric-card">
                   <div className="metric-label">Combines Passed</div>
-                  <div className="metric-value mv-neutral">{combines.length}</div>
+                  <div className="metric-value mv-neutral">{combines.filter(c => !c.status || c.status === "Passed" || c.status === "Standard" || c.status === "Express").length}</div>
                 </div>
                 <div className="metric-card">
                   <div className="metric-label">Profit Factor</div>
@@ -1032,12 +1111,12 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div style={{ marginBottom: "16px" }}><FirmsGrid onSync={fetchAllData} onClear={() => { setData({ combines: [], spending: [], payouts: [], closed: [] }); setLastUpdated(null); }} loading={loading} hasData={payouts.length > 0 || spending.length > 0} /></div>
+              <div style={{ marginBottom: "16px" }}><FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} /></div>
               <PNLChart payouts={payouts} spending={spending} />
             </>
           )}
 
-          {activeTab === "firms" && <FirmsGrid onSync={fetchAllData} onClear={() => { setData({ combines: [], spending: [], payouts: [], closed: [] }); setLastUpdated(null); }} loading={loading} hasData={payouts.length > 0 || spending.length > 0} />}
+          {activeTab === "firms" && <FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} />}
 
           {activeTab === "calendar" && <CalendarPage payouts={payouts} spending={spending} savedJournals={savedJournals} setSavedJournals={setSavedJournals} session={session} />}
           {activeTab === "journal" && (
