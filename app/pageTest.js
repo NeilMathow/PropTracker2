@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 function PNLChart({ payouts, spending }) {
   const [tooltip, setTooltip] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const events = [
     ...payouts.filter(p => p.amount).map(p => ({ date: new Date(p.date), amount: p.amount })),
     ...spending.filter(s => s.amount).map(s => ({ date: new Date(s.date), amount: -s.amount })),
@@ -127,7 +127,7 @@ const FIRMS = [
   )}
 ];
 
-function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, onViewFirm, loading, firmLoading, firmData }) {
+function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, loading, firmLoading, firmData }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
       {FIRMS.map((firm) => {
@@ -135,8 +135,7 @@ function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, onViewFirm, loading, fi
         const isFirmLoading = firmLoading?.[firm.firmKey] || false;
         return (
         <div key={firm.name}
-          onClick={() => hasData && firm.firmKey && onViewFirm(firm.firmKey)}
-          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "14px", transition: "border-color 0.2s, box-shadow 0.2s", cursor: hasData && firm.firmKey ? "pointer" : "default" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.25rem", display: "flex", flexDirection: "column", gap: "14px", transition: "border-color 0.2s, box-shadow 0.2s" }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(249,115,22,0.6)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(249,115,22,0.15)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none'; }}
         >
@@ -148,9 +147,9 @@ function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, onViewFirm, loading, fi
                 {hasData ? "Connected" : "Not connected"}
               </div>
             </div>
-            <div style={{ flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>{firm.logo}</div>
+            <div style={{ flexShrink: 0, width: "42px", height: "42px", borderRadius: "10px", overflow: "hidden" }}>{firm.logo}</div>
           </div>
-          <div style={{ display: "flex", gap: "8px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: "flex", gap: "8px" }}>
             {firm.comingSoon ? (
               <div style={{ fontSize: "11px", fontWeight: 700, padding: "6px 14px", borderRadius: "7px", background: "rgba(249,115,22,0.1)", color: "#f97316", border: "1px solid rgba(249,115,22,0.3)", letterSpacing: "0.05em" }}>
                 Coming Soon
@@ -773,125 +772,14 @@ function CalendarPage({ payouts, spending, savedJournals, setSavedJournals, sess
   );
 }
 
-function FirmDetailPage({ firmKey, data, onBack }) {
-  const firm = FIRMS.find(f => f.firmKey === firmKey);
-  const combines = data.combines.filter(e => e.firm === firmKey);
-  const spending = data.spending.filter(e => e.firm === firmKey);
-  const payouts = firmKey === "topstep" ? data.payouts : firmKey === "lucid" ? (data.lucidPayouts || []) : [];
-
-  const totalEarned = payouts.reduce((sum, p) => sum + (p.amount || 0), 0);
-  const totalSpent = spending.reduce((sum, s) => sum + (s.amount || s.purchasePrice || s.total || 0), 0);
-  const netProfit = totalEarned - totalSpent;
-  const passed = combines.filter(c => !c.status || c.status === "Passed" || c.status === "Standard" || c.status === "Express").length;
-
-  const [spendingCollapsed, setSpendingCollapsed] = useState(false);
-  const [payoutsCollapsed, setPayoutsCollapsed] = useState(false);
-
-  return (
-    <div>
-      <div className="metrics-grid" style={{ marginBottom: "24px" }}>
-        <div className="metric-card">
-          <div className="metric-label">Total Earned</div>
-          <div className="metric-value mv-pos">${totalEarned.toFixed(2)}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Total Spent</div>
-          <div className="metric-value mv-neg">${totalSpent.toFixed(2)}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Net Profit</div>
-          <div className={`metric-value ${netProfit === 0 ? "mv-neutral" : netProfit > 0 ? "mv-pos" : "mv-neg"}`}>${netProfit.toFixed(2)}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Combines Passed</div>
-          <div className="metric-value mv-neutral">{passed}</div>
-        </div>
-        {totalSpent > 0 && (
-          <div className="metric-card">
-            <div className="metric-label">Profit Factor</div>
-            <div className={`metric-value ${(totalEarned / totalSpent) >= 1 ? "mv-pos" : "mv-neg"}`}>{(totalEarned / totalSpent).toFixed(2)}</div>
-          </div>
-        )}
-      </div>
-
-      <PNLChart payouts={payouts} spending={spending} />
-
-      {/* Spending Table */}
-      {spending.length > 0 && (
-        <div className="section" style={{ marginBottom: "12px" }}>
-          <div className="section-header" style={{ cursor: "pointer" }} onClick={() => setSpendingCollapsed(!spendingCollapsed)}>
-            <span className="section-title" style={{ color: "#f97316", fontSize: "14px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Spending {spendingCollapsed ? "▶" : "▼"}</span>
-            <span className="badge">{spending.length}</span>
-          </div>
-          {!spendingCollapsed && (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Subject</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {spending.map((s, i) => (
-                  <tr key={s.id || i}>
-                    <td className="date">{s.date ? new Date(s.date).toLocaleDateString() : s.purchaseDate || "—"}</td>
-                    <td className="subject-cell">{s.subject || s.productName || "—"}</td>
-                    <td className="amount">${(s.amount || s.purchasePrice || s.total || 0).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          )}
-        </div>
-      )}
-
-      {/* Payouts Table (Topstep only) */}
-      {payouts.length > 0 && (
-        <div className="section" style={{ marginBottom: "12px" }}>
-          <div className="section-header" style={{ cursor: "pointer" }} onClick={() => setPayoutsCollapsed(!payoutsCollapsed)}>
-            <span className="section-title" style={{ color: "#f97316", fontSize: "14px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>Payouts {payoutsCollapsed ? "▶" : "▼"}</span>
-            <span className="badge">{payouts.length}</span>
-          </div>
-          {!payoutsCollapsed && (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Subject</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payouts.map((p, i) => (
-                  <tr key={p.id || i}>
-                    <td className="date">{new Date(p.date).toLocaleDateString()}</td>
-                    <td className="subject-cell">{p.subject || "—"}</td>
-                    <td className="amount">${(p.amount || 0).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [data, setData] = useState({ combines: [], spending: [], payouts: [], closed: [], lucidPayouts: [], firmData: { topstep: false, mff: false, lucid: false, apex: false } });
+  const [data, setData] = useState({ combines: [], spending: [], payouts: [], closed: [], firmData: { topstep: false, mff: false, lucid: false, apex: false } });
   const [loading, setLoading] = useState(false);
   const [firmLoading, setFirmLoading] = useState({ topstep: false, mff: false, lucid: false, apex: false });
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [activeFirm, setActiveFirm] = useState(null);
   const [savedJournals, setSavedJournals] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("journals");
@@ -951,7 +839,7 @@ export default function Dashboard() {
       const endpoints = {
         topstep: [fetch("/api/combines"), fetch("/api/spending"), fetch("/api/payouts"), fetch("/api/closed")],
         mff: [fetch("/api/mff/combines"), fetch("/api/mff/spending")],
-        lucid: [fetch("/api/lucid/combines"), fetch("/api/lucid/spending"), fetch("/api/lucid/payouts")],
+        lucid: [fetch("/api/lucid/combines"), fetch("/api/lucid/spending")],
       };
       if (firmKey === "topstep") {
         const [combinesRes, spendingRes, payoutsRes, closedRes] = await Promise.all(endpoints.topstep);
@@ -974,13 +862,12 @@ export default function Dashboard() {
           firmData: { ...prev.firmData, mff: true },
         }));
       } else if (firmKey === "lucid") {
-        const [combinesRes, spendingRes, payoutsRes] = await Promise.all(endpoints.lucid);
-        const [combinesData, spendingData, payoutsData] = await Promise.all([combinesRes.json(), spendingRes.json(), payoutsRes.ok ? payoutsRes.json() : { emails: [] }]);
+        const [combinesRes, spendingRes] = await Promise.all(endpoints.lucid);
+        const [combinesData, spendingData] = await Promise.all([combinesRes.json(), spendingRes.json()]);
         setData(prev => ({
           ...prev,
           combines: [...prev.combines.filter(e => e.firm !== "lucid"), ...(combinesData.emails || []).map(e => ({ ...e, firm: "lucid" }))],
           spending: [...prev.spending.filter(e => e.firm !== "lucid"), ...(spendingData.emails || []).map(e => ({ ...e, firm: "lucid" }))],
-          lucidPayouts: (payoutsData.emails || []),
           firmData: { ...prev.firmData, lucid: true },
         }));
       } else if (firmKey === "apex") {
@@ -1006,7 +893,7 @@ export default function Dashboard() {
     setLoading(true);
     setFirmLoading({ topstep: true, mff: true, lucid: true, apex: true });
     try {
-      const [combinesRes, spendingRes, payoutsRes, closedRes, mffCombinesRes, mffSpendingRes, lucidCombinesRes, lucidSpendingRes, lucidPayoutsRes, apexCombinesRes, apexSpendingRes] = await Promise.all([
+      const [combinesRes, spendingRes, payoutsRes, closedRes, mffCombinesRes, mffSpendingRes, lucidCombinesRes, lucidSpendingRes, apexCombinesRes, apexSpendingRes] = await Promise.all([
         fetch("/api/combines"),
         fetch("/api/spending"),
         fetch("/api/payouts"),
@@ -1015,18 +902,16 @@ export default function Dashboard() {
         fetch("/api/mff/spending"),
         fetch("/api/lucid/combines"),
         fetch("/api/lucid/spending"),
-        fetch("/api/lucid/payouts"),
         fetch("/api/apex/combines"),
         fetch("/api/apex/spending"),
       ]);
       if (!combinesRes.ok || !spendingRes.ok || !payoutsRes.ok || !closedRes.ok) throw new Error("Failed to fetch data");
-      const [combinesData, spendingData, payoutsData, closedData, mffCombinesData, mffSpendingData, lucidCombinesData, lucidSpendingData, lucidPayoutsData, apexCombinesData, apexSpendingData] = await Promise.all([
+      const [combinesData, spendingData, payoutsData, closedData, mffCombinesData, mffSpendingData, lucidCombinesData, lucidSpendingData, apexCombinesData, apexSpendingData] = await Promise.all([
         combinesRes.json(), spendingRes.json(), payoutsRes.json(), closedRes.json(),
         mffCombinesRes.ok ? mffCombinesRes.json() : { emails: [] },
         mffSpendingRes.ok ? mffSpendingRes.json() : { emails: [] },
         lucidCombinesRes.ok ? lucidCombinesRes.json() : { emails: [] },
         lucidSpendingRes.ok ? lucidSpendingRes.json() : { emails: [] },
-        lucidPayoutsRes.ok ? lucidPayoutsRes.json() : { emails: [] },
         apexCombinesRes.ok ? apexCombinesRes.json() : { emails: [] },
         apexSpendingRes.ok ? apexSpendingRes.json() : { emails: [] },
       ]);
@@ -1045,7 +930,6 @@ export default function Dashboard() {
         ],
         payouts: payoutsData.emails || [],
         closed: closedData.emails || [],
-        lucidPayouts: lucidPayoutsData.emails || [],
         firmData: { topstep: true, mff: true, lucid: true, apex: true },
       });
       setLastUpdated(new Date().toLocaleTimeString());
@@ -1184,11 +1068,7 @@ export default function Dashboard() {
       <div className="main-content" style={{ marginLeft: sidebarOpen ? "212px" : "0", width: sidebarOpen ? "calc(100% - 212px)" : "100%", transition: "all 0.3s ease" }}>
         <div className="page-header">
           <div style={{ marginLeft: sidebarOpen ? "0px" : "40px" }}>
-            {activeFirm ? (
-              <button onClick={() => setActiveFirm(null)} style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "8px", padding: "8px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>← Back</button>
-            ) : (
-              <h1 className="page-title">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
-            )}
+            <h1 className="page-title">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
             {lastUpdated && <p className="last-updated">Last updated: {lastUpdated}</p>}
           </div>
           {activeTab === "journal" ? (
@@ -1204,17 +1084,6 @@ export default function Dashboard() {
 
         <div className="page-body">
           {error && <div className="error">⚠ {error}</div>}
-
-          {activeFirm ? (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{FIRMS.find(f => f.firmKey === activeFirm)?.logo}</div>
-                <h1 style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.5px" }}>{FIRMS.find(f => f.firmKey === activeFirm)?.name}</h1>
-              </div>
-              <FirmDetailPage firmKey={activeFirm} data={data} onBack={() => setActiveFirm(null)} />
-            </>
-          ) : (
-          <>
 
           {activeTab === "dashboard" && (
             <>
@@ -1242,12 +1111,12 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div style={{ marginBottom: "16px" }}><FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onViewFirm={setActiveFirm} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} /></div>
+              <div style={{ marginBottom: "16px" }}><FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} /></div>
               <PNLChart payouts={payouts} spending={spending} />
             </>
           )}
 
-          {activeTab === "firms" && <FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onViewFirm={setActiveFirm} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} />}
+          {activeTab === "firms" && <FirmsGrid onSyncFirm={fetchFirm} onSyncAll={fetchAllData} onClearFirm={(firmKey) => setData(prev => ({ ...prev, combines: prev.combines.filter(e => e.firm !== firmKey), spending: prev.spending.filter(e => e.firm !== firmKey), payouts: firmKey === "topstep" ? [] : prev.payouts, closed: firmKey === "topstep" ? [] : prev.closed, firmData: { ...prev.firmData, [firmKey]: false } }))} loading={loading} firmLoading={firmLoading} firmData={data.firmData} />}
 
           {activeTab === "calendar" && <CalendarPage payouts={payouts} spending={spending} savedJournals={savedJournals} setSavedJournals={setSavedJournals} session={session} />}
           {activeTab === "journal" && (
@@ -1349,8 +1218,6 @@ export default function Dashboard() {
                 <div style={{ fontSize: "14px" }}>We're working on this feature. Check back later!</div>
               </div>
             </div>
-          )}
-          </>
           )}
         </div>
       </div>

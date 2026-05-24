@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { getGmailAuth, fetchEmails, parseBilling, parseResets, parsePasses } from "../../../../lib/apex-gmail";
@@ -11,13 +13,12 @@ export async function GET(req) {
 
     const gmail = await getGmailAuth(session.accessToken);
 
-    const [platformResult, fundingResult, rithmicResetResult, tradovateResetResult, tradovatePassResult, rithmicPassResult] = await Promise.all([
+    const [platformResult, fundingResult, rithmicResetResult, tradovateResetResult, passResult] = await Promise.all([
       fetchEmails(gmail, 'subject:"Apex Trader Platform: Payment Receipt" from:noreply@apextraderfunding.com', 100),
       fetchEmails(gmail, 'subject:"Apex Trader Funding: Payment Receipt" from:noreply@atf.com', 100),
       fetchEmails(gmail, 'subject:"Rithmic Reset being Activated" from:noreply@atf.com', 100),
       fetchEmails(gmail, 'subject:"Tradovate Reset being Activated" from:noreply@atf.com', 100),
-      fetchEmails(gmail, 'subject:"Your Tradovate account is Setup For Apex Trader Funding" from:noreply@atf.com', 100),
-      fetchEmails(gmail, 'subject:"Your Rithmic account is Setup For Apex Trader Funding" from:noreply@atf.com', 100),
+      fetchEmails(gmail, 'subject:"Activation Steps for Your Performance Funded Account"', 100),
     ]);
 
     const allBillingEmails = [...platformResult.emails, ...fundingResult.emails];
@@ -26,13 +27,10 @@ export async function GET(req) {
     const allResetEmails = [...rithmicResetResult.emails, ...tradovateResetResult.emails];
     const resets = parseResets(allResetEmails);
 
-    const allPassEmails = [...tradovatePassResult.emails, ...rithmicPassResult.emails];
-    const passes = parsePasses(allPassEmails);
+    const passes = parsePasses(passResult.emails);
 
-    // Sort billings by date ascending for matching
     billings.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // For each pass, find closest billing before it within PASS_WINDOW_DAYS
     const matchedBillingIds = new Set();
     const passMatches = {};
 
@@ -54,11 +52,10 @@ export async function GET(req) {
 
       if (closest) {
         matchedBillingIds.add(closest.id);
-        passMatches[closest.id] = { passDate: pass.date };
+        passMatches[closest.id] = { passDate: pass.date, accountId: pass.accountId };
       }
     }
 
-    // For each reset, find closest billing before it and use that price
     const resetMatches = {};
     for (const reset of resets) {
       const resetDate = new Date(reset.date);
@@ -81,14 +78,13 @@ export async function GET(req) {
       }
     }
 
-    // Build combines from billings — default Closed, Passed if matched
     const combines = billings.map(({ body, ...e }) => {
       const status = matchedBillingIds.has(e.id) ? "Passed" : "Closed";
       const passDate = passMatches[e.id]?.passDate || null;
-      return { ...e, status, passDate };
+      const accountId = passMatches[e.id]?.accountId || e.accountId || null;
+      return { ...e, status, passDate, accountId };
     });
 
-    // Add resets as separate entries
     const resetCombines = resets.map(({ body, ...e }) => {
       const match = resetMatches[e.id] || {};
       return {

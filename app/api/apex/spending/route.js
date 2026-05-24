@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { getGmailAuth, fetchEmails, parseBilling, parseResets } from "../../../../lib/apex-gmail";
@@ -22,7 +24,6 @@ export async function GET(req) {
 
     const allResetEmails = [...rithmicResetResult.emails, ...tradovateResetResult.emails];
 
-    // For resets, find closest billing before and use that price
     const resets = parseResets(allResetEmails).map(({ body, ...e }) => {
       const resetDate = new Date(e.date);
       let closest = null;
@@ -52,10 +53,7 @@ export async function GET(req) {
 
     const total = allEmails.reduce((sum, e) => sum + (e.amount || 0), 0);
 
-    return Response.json({
-      emails: allEmails,
-      total,
-    });
+    return Response.json({ emails: allEmails, total });
   } catch (error) {
     console.error(error);
     return Response.json({ error: error.message }, { status: 500 });
