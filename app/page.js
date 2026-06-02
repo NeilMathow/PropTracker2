@@ -1539,7 +1539,7 @@ export default function Dashboard() {
 
         {/* User profile at bottom */}
         {session?.user && (
-          <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", flexShrink: 0 }}>
+          <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", flexShrink: 0, paddingLeft: "40px" }}>
             {session.user.image ? (
               <img src={session.user.image} alt="" style={{ width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0 }} />
             ) : (
