@@ -126,7 +126,16 @@ const FIRMS = [
   )},
   { name: "Tradeify", connected: false, comingSoon: true, color: "#10b981", logo: (
     <img src="/logos/tradeify.png" alt="Tradeify" style={{ width: "38px", height: "38px", borderRadius: "10px", objectFit: "cover", display: "block", margin: "2px" }} />
-  )}
+  )},
+  { name: "FundedNext", connected: false, comingSoon: true, color: "#6366f1", logo: (
+    <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 20 L10 80 L25 80 L25 55 L45 55 L45 42 L25 42 L25 33 L48 33 L48 20 Z" fill="white"/>
+        <path d="M52 20 L52 80 L67 80 L67 42 L85 20 Z" fill="white"/>
+        <polygon points="67,20 85,20 85,38" fill="#6366f1"/>
+      </svg>
+    </div>
+  )},
 ];
 
 function FirmsGrid({ onSyncFirm, onSyncAll, onClearFirm, onViewFirm, loading, firmLoading, firmData }) {
