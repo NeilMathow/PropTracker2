@@ -129,7 +129,7 @@ const FIRMS = [
   )},
   { name: "FundedNext", connected: false, comingSoon: true, color: "#6366f1", logo: (
     <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <svg width="42" height="42" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="42" height="42" viewBox="-15 -15 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="120" height="120" fill="#000"/>
         {/* F */}
         <path d="M8 18 L8 102 L24 102 L24 68 L46 68 L46 54 L24 54 L24 32 L50 32 L50 18 Z" fill="white"/>
