@@ -3,7 +3,6 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import AnalyticsPage from "./AnalyticsPage";
-import IntelligencePage from "./IntelligencePage";
 
 function PNLChart({ payouts, spending }) {
   const [tooltip, setTooltip] = useState(null);
@@ -1181,23 +1180,6 @@ function TaxesPage({ payouts, spending, onBack, step, setStep, onDownloadClick, 
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-
-  // Auto-trigger Google sign-in when coming from marketing site login
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session && typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("autoLogin") === "1") {
-        // Remove the param from URL cleanly
-        const url = new URL(window.location.href);
-        url.searchParams.delete("autoLogin");
-        window.history.replaceState({}, "", url.toString());
-        // Auto sign in with Google — since they just authed, no second prompt
-        signIn("google", { callbackUrl: window.location.href });
-      }
-    }
-  }, [status, session]);
-
   const [data, setData] = useState({ combines: [], spending: [], payouts: [], closed: [], lucidPayouts: [], firmData: { topstep: false, mff: false, lucid: false, apex: false } });
   const [loading, setLoading] = useState(false);
   const [firmLoading, setFirmLoading] = useState({ topstep: false, mff: false, lucid: false, apex: false });
@@ -1251,46 +1233,21 @@ export default function Dashboard() {
     }
   };
 
-  // Load journals — Supabase first, localStorage fallback
+  // Load journals from localStorage on mount (client only)
   useEffect(() => {
-    async function loadJournals() {
-      try {
-        const res = await fetch("/api/journals");
-        if (res.ok) {
-          const data = await res.json();
-          if (data && !data.error && Object.keys(data).length > 0) {
-            setSavedJournals(data);
-            // Sync to localStorage as backup
-            try { localStorage.setItem("journals", JSON.stringify(data)); } catch(e) {}
-            setJournalsHydrated(true);
-            return;
-          }
-        }
-      } catch(e) {}
-      // Fallback to localStorage
-      try {
-        const saved = localStorage.getItem("journals");
-        if (saved) setSavedJournals(JSON.parse(saved));
-      } catch(e) {}
-      setJournalsHydrated(true);
-    }
-    loadJournals();
+    try {
+      const saved = localStorage.getItem("journals");
+      if (saved) setSavedJournals(JSON.parse(saved));
+    } catch(e) {}
+    setJournalsHydrated(true);
   }, []);
 
-  // Save to Supabase + localStorage whenever savedJournals changes (only after hydration)
+  // Save to localStorage whenever savedJournals changes (only after hydration)
   useEffect(() => {
     if (!journalsHydrated) return;
-    // Save to localStorage immediately
-    try { localStorage.setItem("journals", JSON.stringify(savedJournals)); } catch(e) {}
-    // Save to Supabase (debounced via async fire-and-forget)
-    const timer = setTimeout(() => {
-      fetch("/api/journals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(savedJournals),
-      }).catch(() => {});
-    }, 500);
-    return () => clearTimeout(timer);
+    try {
+      localStorage.setItem("journals", JSON.stringify(savedJournals));
+    } catch(e) {}
   }, [savedJournals, journalsHydrated]);
 
   const fetchFirm = async (firmKey) => {
@@ -1409,14 +1366,6 @@ export default function Dashboard() {
     }
   };
 
-  if (status === "loading") {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)" }}>
-        <div className="spinner" style={{ width: "32px", height: "32px", borderWidth: "3px" }} />
-      </div>
-    );
-  }
-
   if (!session) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)", position: "relative", overflow: "hidden" }}>
@@ -1532,7 +1481,6 @@ export default function Dashboard() {
           {navItem("calendar", "Calendar", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>)}
           {navItem("journal", "Journal", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>)}
           {navItem("analytics", "Analytics", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>)}
-          {navItem("intelligence", "Strategy Tracking", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>)}
           <div className="nav-section-label">Finance</div>
           {navItem("taxes", "Taxes", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>)}
         </nav>
@@ -1540,7 +1488,7 @@ export default function Dashboard() {
       </div>
 
       <div className="main-content" style={{ marginLeft: sidebarOpen ? "212px" : "0", width: sidebarOpen ? "calc(100% - 212px)" : "100%", transition: "all 0.3s ease" }}>
-        <div className="page-header" style={{ display: activeTab === "intelligence" ? "none" : undefined }}>
+        <div className="page-header">
           <div style={{ marginLeft: sidebarOpen ? "0px" : "40px" }}>
             {activeFirm ? (
               <button onClick={() => setActiveFirm(null)} style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", border: "none", borderRadius: "8px", padding: "8px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>← Back</button>
@@ -1554,7 +1502,7 @@ export default function Dashboard() {
             )}
             {lastUpdated && <p className="last-updated">Last updated: {lastUpdated}</p>}
           </div>
-          {activeTab === "journal" && Object.values(savedJournals).some(e => Array.isArray(e) && e.length > 0) ? (
+          {activeTab === "journal" && Object.keys(savedJournals).length > 0 ? (
             <button className="btn-primary" onClick={() => setShowAddEntryModal(true)}>
               Add Entry
             </button>
@@ -1590,8 +1538,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {activeTab === "intelligence" && <IntelligencePage sidebarOpen={sidebarOpen} />}
-        <div className="page-body" style={{ display: activeTab === "intelligence" ? "none" : undefined }}>
+        <div className="page-body">
           {error && <div className="error">⚠ {error}</div>}
 
           {activeFirm ? (
@@ -1644,7 +1591,7 @@ export default function Dashboard() {
               <div className="spinner" />
             </div>
           )}
-          {activeTab === "journal" && journalsHydrated && !Object.values(savedJournals).some(e => Array.isArray(e) && e.length > 0) && (
+          {activeTab === "journal" && journalsHydrated && Object.keys(savedJournals).length === 0 && (
             <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
               <div style={{ filter: "blur(5px)", opacity: 0.35, pointerEvents: "none", userSelect: "none", position: "absolute", inset: 0, padding: "0 0 40px" }}>
                 {/* Stat cards at top */}
@@ -1694,7 +1641,7 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          {activeTab === "journal" && journalsHydrated && Object.values(savedJournals).some(e => Array.isArray(e) && e.length > 0) && (() => {
+          {activeTab === "journal" && journalsHydrated && Object.keys(savedJournals).length > 0 && (() => {
             const allEntries = Object.entries(savedJournals).flatMap(([date, entries]) =>
               Array.isArray(entries) ? entries.map(e => ({ ...e, _date: date })) : []
             );

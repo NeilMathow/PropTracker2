@@ -23,7 +23,7 @@ export async function GET(req) {
     return Response.json({
       subject: email.subject,
       bodyLength: email.body.length,
-      bodySample: email.body.substring(0, 1000),
+      fullBody: email.body,
     });
   } catch (error) {
     console.error(error);

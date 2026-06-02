@@ -18,10 +18,9 @@ export async function GET(req) {
     );
 
     const emails = result.emails.map(({ body, ...e }) => {
-      // "Payment Amount\n\n$757.31" — allow newlines between label and value
-      const amountMatch = body.match(/Payment Amount[\s\S]{0,20}\$([\d,]+\.?\d{0,2})/i);
-      // "Date Processed\n\n5/22/2026 5:40 PM"
-      const processedDateMatch = body.match(/Date Processed[\s\S]{0,20}([\d]{1,2}\/[\d]{1,2}\/[\d]{4}\s+[\d]{1,2}:[\d]{2}\s*[APM]+)/i);
+      // Just find the first $XXX.XX in the email
+      const amountMatch = body.match(/\$([\d,]+\.\d{2})/);
+      const processedDateMatch = body.match(/(\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}\s*[APM]+)/i);
 
       const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, "")) : null;
 
