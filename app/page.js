@@ -129,11 +129,14 @@ const FIRMS = [
   )},
   { name: "FundedNext", connected: false, comingSoon: true, color: "#6366f1", logo: (
     <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" fill="#000"/>
-        <path d="M8 15 L8 85 L22 85 L22 57 L42 57 L42 44 L22 44 L22 28 L45 28 L45 15 Z" fill="white"/>
-        <path d="M50 15 L50 85 L64 85 L64 38 L84 15 Z" fill="white"/>
-        <polygon points="64,15 84,15 84,35" fill="#6366f1"/>
+      <svg width="42" height="42" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="120" fill="#000"/>
+        {/* F */}
+        <path d="M8 18 L8 102 L24 102 L24 68 L46 68 L46 54 L24 54 L24 32 L50 32 L50 18 Z" fill="white"/>
+        {/* N */}
+        <path d="M58 18 L58 102 L73 102 L73 44 L95 102 L112 102 L112 18 L97 18 L97 76 L75 18 Z" fill="white"/>
+        {/* Purple triangle top-right of N */}
+        <polygon points="97,18 112,18 112,36" fill="#6366f1"/>
       </svg>
     </div>
   )},
