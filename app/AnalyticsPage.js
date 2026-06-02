@@ -161,7 +161,7 @@ const FIRMS_LIST = [
   { key: "alpha",      label: "Alpha Futures",       color: "#34d399", logo: "/logos/alpha.png" },
   { key: "tpt",        label: "Take Profit Trader",  color: "#fb923c", logo: "/logos/tpt.png" },
   { key: "tradeify",   label: "Tradeify",            color: "#f87171", logo: "/logos/tradeify.png" },
-  { key: "fundednext", label: "Funded Next",         color: "#fbbf24", logo: null },
+  { key: "fundednext", label: "Funded Next",         color: "#6366f1", logo: "fn-svg" },
 ];
 
 // ── Firm Button with hover ───────────────────────────────────────────────────
@@ -187,7 +187,14 @@ function FirmButton({ f, selected, onSelect }) {
       }}
     >
       <div style={{ width: "28px", height: "28px", borderRadius: "6px", overflow: "hidden", flexShrink: 0, background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)" }}>
-        {f.logo ? <img src={f.logo} alt={f.label} style={{ width: "28px", height: "28px", objectFit: "cover", borderRadius: "6px" }} /> : <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: f.color }} />}
+        {f.logo === "fn-svg" ? (
+          <svg width="28" height="28" viewBox="-25 -25 170 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="-25" y="-25" width="170" height="170" fill="#000"/>
+            <path d="M8 18 L8 102 L24 102 L24 68 L46 68 L46 54 L24 54 L24 32 L50 32 L50 18 Z" fill="white"/>
+            <path d="M58 18 L58 102 L73 102 L73 44 L95 102 L112 102 L112 18 L97 18 L97 76 L75 18 Z" fill="white"/>
+            <polygon points="97,18 112,18 112,36" fill="#6366f1"/>
+          </svg>
+        ) : f.logo ? <img src={f.logo} alt={f.label} style={{ width: "28px", height: "28px", objectFit: "cover", borderRadius: "6px" }} /> : <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: f.color }} />}
       </div>
       <span style={{ fontSize: "13px", fontWeight: 600, color: isActive || hovered ? "var(--text)" : "var(--muted)", transition: "color .15s" }}>{f.label}</span>
       {isActive && !hovered && <span style={{ marginLeft: "auto", color: "#f97316", fontSize: "14px", fontWeight: 800 }}>✓</span>}
