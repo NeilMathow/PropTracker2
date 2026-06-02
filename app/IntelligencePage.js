@@ -159,6 +159,20 @@ function EconomicCalendarWidget() {
 }
 
 
+function getActiveSessions() {
+  const now = new Date();
+  // Convert to ET (UTC-4 during EDT, UTC-5 during EST)
+  const etOffset = -4;
+  const etHour = (now.getUTCHours() + etOffset + 24) % 24;
+  const etMin = now.getUTCMinutes();
+  const etTime = etHour + etMin / 60;
+  return {
+    Asia: etTime >= 19 || etTime < 4,       // 7pm–4am ET
+    London: etTime >= 3 && etTime < 12,     // 3am–12pm ET
+    "New York": etTime >= 8 && etTime < 17, // 8am–5pm ET
+  };
+}
+
 export default function IntelligencePage({ sidebarOpen = true }) {
   const sidebarWidth = sidebarOpen ? 212 : 0;
   const [activeSym, setActiveSym] = useState(SYMBOLS[0]);
@@ -166,6 +180,13 @@ export default function IntelligencePage({ sidebarOpen = true }) {
   const [volatility, setVolatility] = useState("NORMAL");
   const [vixValue, setVixValue] = useState(null);
   const [vixIndex, setVixIndex] = useState("VIX");
+  const [sessions, setSessions] = useState(getActiveSessions());
+
+  useEffect(() => {
+    const tick = () => setSessions(getActiveSessions());
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const fetchVix = async () => {
@@ -209,11 +230,7 @@ export default function IntelligencePage({ sidebarOpen = true }) {
           }}>
             {/* Session indicators */}
             <div style={{ display: "flex", gap: "10px", marginRight: "8px" }}>
-              {[
-                { name: "Asian", active: true },
-                { name: "London", active: false },
-                { name: "New York", active: false },
-              ].map(s => (
+              {(["Asia", "London", "New York"]).map(name => ({ name, active: sessions[name] })).map(s => (
                 <div key={s.name} style={{
                   fontSize: "11px",
                   color: s.active ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.4)",

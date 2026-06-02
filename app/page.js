@@ -1517,14 +1517,14 @@ export default function Dashboard() {
           <line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
       </button>
-      <div className="sidebar" style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.3s ease", position: "fixed", height: "100vh", zIndex: "999", width: "212px" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div className="sidebar" style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.3s ease", position: "fixed", height: "100vh", zIndex: "999", width: "212px", display: "flex", flexDirection: "column" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="sidebar-brand" onClick={() => { setActiveTab("dashboard"); setActiveFirm(null); setShowAddEntryModal(false); }} style={{ cursor: "pointer" }}>
             <div style={{ display: "flex", alignItems: "center" }}>
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "38px", color: "#fff", letterSpacing: "1px", lineHeight: 1 }}>PROP</span>
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "38px", background: "linear-gradient(90deg,#ef4444,#f97316)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "1px", lineHeight: 1 }}>DESK</span>
             </div>
         </div>
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" style={{ flex: 1 }}>
           <div className="nav-section-label">Overview</div>
           {navItem("dashboard", "Dashboard", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>)}
           {navItem("firms", "Firms", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>)}
@@ -1537,6 +1537,19 @@ export default function Dashboard() {
           {navItem("taxes", "Taxes", <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="12" y1="12" x2="12" y2="18"/></svg>)}
         </nav>
 
+        {/* User profile at bottom */}
+        {session?.user && (
+          <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: "10px", background: "rgba(0,0,0,0.2)", flexShrink: 0 }}>
+            {session.user.image ? (
+              <img src={session.user.image} alt="" style={{ width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0 }} />
+            ) : (
+              <svg viewBox="0 0 24 24" width="20" height="20" style={{ flexShrink: 0 }}><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{session.user.name}</div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="main-content" style={{ marginLeft: sidebarOpen ? "212px" : "0", width: sidebarOpen ? "calc(100% - 212px)" : "100%", transition: "all 0.3s ease" }}>
