@@ -73,7 +73,10 @@ function parseCSV(txt, src) {
     if (t.buyPrice && !t.EntryPrice) {
       const buy = parseFloat(t.buyPrice);
       const sell = parseFloat(t.sellPrice);
-      const isLong = sell > buy;
+      const pnlPos = t._pnl >= 0;
+      const priceUp = sell > buy;
+      // Long: price up + profit, OR price down + loss
+      const isLong = (priceUp && pnlPos) || (!priceUp && !pnlPos);
       t.Type = isLong ? "Long" : "Short";
       t.EntryPrice = isLong ? buy : sell;
       t.ExitPrice = isLong ? sell : buy;
