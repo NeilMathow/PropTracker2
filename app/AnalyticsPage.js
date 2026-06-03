@@ -67,6 +67,22 @@ function parseCSV(txt, src) {
     // Support both duration formats
     t._dur = parseDur(t.duration || t.TradeDuration || "");
     t._src = src;
+
+    // Normalize Tradovate fields to standard field names
+    if (t.symbol && !t.ContractName) t.ContractName = t.symbol;
+    if (t.buyPrice && !t.EntryPrice) {
+      const buy = parseFloat(t.buyPrice);
+      const sell = parseFloat(t.sellPrice);
+      // determine direction: if sell came before buy it's a short
+      const buyTs = t.boughtTimestamp || "";
+      const sellTs = t.soldTimestamp || "";
+      const isShort = sellTs < buyTs;
+      t.Type = isShort ? "Short" : "Long";
+      t.EntryPrice = isShort ? sell : buy;
+      t.ExitPrice = isShort ? buy : sell;
+      t.Size = t.qty || "1";
+    }
+
     return t;
   }).filter(t => !isNaN(t._pnl));
 }
