@@ -1170,17 +1170,7 @@ export default function AnalyticsPage({ uploadRef }) {
       const reader = new FileReader();
       reader.onload = e => {
         const rawText = e.target.result;
-        // Auto-detect Tradovate format (has 'boughtTimestamp' header)
-        const firstLine = rawText.split(/\r?\n/)[0] || "";
-        if (firstLine.includes("boughtTimestamp") || firstLine.includes("buyFillId")) {
-          // Auto-assign as Topstep (Tradovate) without showing modal
-          const trades = parseCSV(rawText, "Topstep");
-          trades.forEach(t => { t._firmKey = "topstep"; t._firmLabel = "Topstep"; t._src = "Topstep"; });
-          setLoadedFiles(prev => [...prev, { name: f.name, label: "Topstep", count: trades.length, color: "#f97316" }]);
-          setAllTrades(prev => [...prev, ...trades]);
-        } else {
-          setPendingQueue(prev => [...prev, { file: f, rawText }]);
-        }
+        setPendingQueue(prev => [...prev, { file: f, rawText }]);
       };
       reader.readAsText(f);
     });
