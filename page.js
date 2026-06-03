@@ -1193,7 +1193,9 @@ function TaxesPage({ payouts, spending, onBack, step, setStep, onDownloadClick, 
 }
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { data: sessionReal, status } = useSession();
+  const isDev = process.env.NODE_ENV === "development";
+  const session = isDev && !sessionReal ? { user: { name: "Dev User", image: null, email: "dev@test.com" } } : sessionReal;
 
   // Auto-trigger Google sign-in when coming from marketing site login
   useEffect(() => {
@@ -1567,10 +1569,9 @@ export default function Dashboard() {
               <button
                 onClick={() => signOut({ callbackUrl: "https://www.propdesk.io" })}
                 style={{ width: "100%", padding: "7px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "rgba(255,255,255,0.45)", fontSize: "11px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)"; e.currentTarget.style.color = "#ef4444"; }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(249,115,22,0.12)"; e.currentTarget.style.borderColor = "rgba(249,115,22,0.35)"; e.currentTarget.style.color = "#f97316"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; }}
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Sign Out
               </button>
             </div>
