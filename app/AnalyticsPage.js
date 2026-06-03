@@ -884,11 +884,11 @@ function Dashboard({ allTrades, onReset }) {
 
   const rn = (v, a, b) => Math.max(0, Math.min(100, (v - a) / (b - a) * 100));
   const radarScores = [
-    rn(wr, 0, 100),                          // Win %: 0–100% → 0–100
-    rn(Math.min(pf, 5), 0, 5),               // Profit Factor: 0–5 → 0–100
-    rn(exp, -500, 500),                      // Expectancy: -$500–$500 → 0–100
-    al > 0 ? rn(aw / al, 0, 3) : 50,        // Avg W/L ratio: 0–3x → 0–100
-    rn(wr, 30, 70),                          // Consistency: 30–70% win rate band → 0–100
+    rn(wr, 30, 100),                         // Win %: 30–100% → 0–100 (below 30% = 0)
+    rn(Math.min(pf, 4), 0.5, 4),             // Profit Factor: 0.5–4 → 0–100
+    rn(exp, -200, 400),                      // Expectancy: -$200–$400 → 0–100
+    al > 0 ? rn(aw / al, 0, 2) : 50,        // Avg W/L ratio: 0–2x → 0–100
+    rn(dayWR, 30, 100),                      // Consistency: day win rate 30–100% → 0–100
   ];
   // Build per-firm stats for firm recommendations
   const firmStats = {};
