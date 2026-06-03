@@ -16,22 +16,56 @@ function fmtD(s) {
   return (s / 3600).toFixed(1) + "h";
 }
 function parseDur(s) {
-  const m = s.match(/(\d+):(\d+):(\d+)/);
-  return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : 0;
+  if (!s) return 0;
+  // HH:MM:SS format
+  const hms = s.match(/(\d+):(\d+):(\d+)/);
+  if (hms) return +hms[1] * 3600 + +hms[2] * 60 + +hms[3];
+  // "1min 2sec", "4min 42sec", "46sec", "2sec" format
+  const ms = s.match(/(?:(\d+)\s*min\s*)?(?:(\d+)\s*sec)?/);
+  if (ms && (ms[1] || ms[2])) return (+ms[1] || 0) * 60 + (+ms[2] || 0);
+  return 0;
+}
+function parsePnlStr(s) {
+  if (!s) return NaN;
+  // handles: $90.00, $(405.00), "$1,155.00", "$(1,155.00)"
+  const neg = s.includes("(");
+  const clean = s.replace(/[$(),]/g, "").trim();
+  const n = parseFloat(clean);
+  return isNaN(n) ? NaN : (neg ? -n : n);
 }
 function parseCSV(txt, src) {
+  // handle quoted fields (e.g. "$(1,155.00)")
+  function splitLine(line) {
+    const result = [];
+    let cur = "", inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === "," && !inQ) { result.push(cur); cur = ""; }
+      else cur += ch;
+    }
+    result.push(cur);
+    return result;
+  }
   const lines = txt.trim().split(/\r?\n/);
-  const hdrs = lines[0].replace(/^\uFEFF/, "").split(",").map(h => h.trim());
+  const hdrs = splitLine(lines[0].replace(/^\uFEFF/, "")).map(h => h.trim());
   return lines.slice(1).filter(l => l.trim()).map(l => {
-    const v = l.split(",");
+    const v = splitLine(l);
     const t = {};
     hdrs.forEach((h, i) => (t[h] = (v[i] || "").trim()));
-    t._pnl = parseFloat(t.PnL);
+
+    // Support both Tradovate format (pnl col) and other formats (PnL col)
+    const pnlRaw = t.pnl || t.PnL || "";
+    t._pnl = pnlRaw.includes("$") ? parsePnlStr(pnlRaw) : parseFloat(pnlRaw);
+
     t._fees = parseFloat(t.Fees || 0) + parseFloat(t.Commissions || 0);
-    const raw = t.EnteredAt || t.TradeDay || "";
+
+    // Support both timestamp formats
+    const raw = t.boughtTimestamp || t.soldTimestamp || t.EnteredAt || t.TradeDay || "";
     const m = raw.match(/(\d{2})\/(\d{2})\/(\d{4})/);
     t._date = m ? new Date(+m[3], +m[1] - 1, +m[2]) : null;
-    t._dur = parseDur(t.TradeDuration || "");
+
+    // Support both duration formats
+    t._dur = parseDur(t.duration || t.TradeDuration || "");
     t._src = src;
     return t;
   }).filter(t => !isNaN(t._pnl));
