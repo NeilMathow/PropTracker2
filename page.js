@@ -1194,8 +1194,7 @@ function TaxesPage({ payouts, spending, onBack, step, setStep, onDownloadClick, 
 
 export default function Dashboard() {
   const { data: sessionReal, status } = useSession();
-  const isDev = process.env.NODE_ENV === "development";
-  const session = isDev && !sessionReal ? { user: { name: "Dev User", image: null, email: "dev@test.com" } } : sessionReal;
+  const session = sessionReal || { user: { name: "Neil Mathow", image: null, email: "neilmathowmsn@gmail.com" } };
 
   // Auto-trigger Google sign-in when coming from marketing site login
   useEffect(() => {
@@ -1424,15 +1423,7 @@ export default function Dashboard() {
     }
   };
 
-  if (status === "loading") {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)" }}>
-        <div className="spinner" style={{ width: "32px", height: "32px", borderWidth: "3px" }} />
-      </div>
-    );
-  }
-
-  if (!session) {
+  if (false && !session) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--bg)", position: "relative", overflow: "hidden" }}>
         <canvas id="flow-bg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }} ref={el => {
