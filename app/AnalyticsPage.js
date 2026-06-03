@@ -73,13 +73,13 @@ function parseCSV(txt, src) {
     if (t.buyPrice && !t.EntryPrice) {
       const buy = parseFloat(t.buyPrice);
       const sell = parseFloat(t.sellPrice);
-      const pnl = t._pnl;
-      // Long: bought low sold high for profit, or bought high sold low for loss
-      // Short: sold high bought low for profit, or sold low bought high for loss
-      const isLong = (sell > buy && pnl > 0) || (sell < buy && pnl < 0);
-      t.Type = isLong ? "Long" : "Short";
-      t.EntryPrice = isLong ? buy : sell;
-      t.ExitPrice = isLong ? sell : buy;
+      // If sell timestamp is before buy timestamp, the sell was the entry = Short
+      const buyTs = new Date(t.boughtTimestamp || 0).getTime();
+      const sellTs = new Date(t.soldTimestamp || 0).getTime();
+      const isShort = sellTs < buyTs;
+      t.Type = isShort ? "Short" : "Long";
+      t.EntryPrice = isShort ? sell : buy;
+      t.ExitPrice = isShort ? buy : sell;
       t.Size = t.qty || "1";
     }
 
